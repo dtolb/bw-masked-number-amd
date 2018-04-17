@@ -1,0 +1,31 @@
+{
+  "name": "bandwidth-call-transfer-voicemail-detection",
+  "version": "0.0.1",
+  "description": "Forward calls and detect voicemail",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dtolb/bandwidth-call-transfer-voicemail-detection.git"
+  },
+  "keywords": [
+    "node",
+    "bandwidth",
+    "call-transfer",
+    "amd",
+    "voicemail",
+    "detection"
+  ],
+  "author": "Dan Tolbert",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dtolb/bandwidth-call-transfer-voicemail-detection/issues"
+  },
+  "homepage": "https://github.com/dtolb/bandwidth-call-transfer-voicemail-detection#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "node-bandwidth": "^2.6.3"
+  }
+}
