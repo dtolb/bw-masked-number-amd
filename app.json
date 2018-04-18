@@ -1,0 +1,23 @@
+{
+  "name": "Bandwidth Generally Masked Numbers",
+  "description": "Bandwidth Voice & Messaging Sample App for masked numbers",
+  "repository": "https://github.com/dtolb/masked-number-api.git",
+  "logo": "https://avatars2.githubusercontent.com/u/12057884?v=3&s=200",
+  "keywords": ["node", "bandwidth", "catapult", "masked-numbers", "numbers", "on-demand"],
+  "env": {
+    "BANDWIDTH_USER_ID": {
+      "description": "Your Bandwidth API User Id, like u-kljgl934s"
+    },
+    "BANDWIDTH_API_TOKEN": {
+      "description": "Your Bandwidth API Token, like: t-kgkja23skd"
+    },
+    "BANDWIDTH_API_SECRET": {
+      "description": "Your Bandwidth API Secret, like: ja35ijsadfoi"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql"
+    }
+  ]
+}

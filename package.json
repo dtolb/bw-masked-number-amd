@@ -25,7 +25,13 @@
   },
   "homepage": "https://github.com/dtolb/bandwidth-call-transfer-voicemail-detection#readme",
   "dependencies": {
+    "debug": "^3.1.0",
     "express": "^4.16.3",
-    "node-bandwidth": "^2.6.3"
+    "node-bandwidth": "^2.6.3",
+    "sequelize": "^4.37.6",
+    "url-join": "^4.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.3"
   }
 }
