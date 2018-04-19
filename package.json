@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dtolb/bandwidth-call-transfer-voicemail-detection.git"
+    "url": "git+https://github.com/dtolb/bw-masked-number-amd.git"
   },
   "keywords": [
     "node",
@@ -23,9 +23,9 @@
   "author": "Dan Tolbert",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dtolb/bandwidth-call-transfer-voicemail-detection/issues"
+    "url": "https://github.com/dtolb/bw-masked-number-amd/issues"
   },
-  "homepage": "https://github.com/dtolb/bandwidth-call-transfer-voicemail-detection#readme",
+  "homepage": "https://github.com/dtolb/bw-masked-number-amd#readme",
   "dependencies": {
     "debug": "^3.1.0",
     "express": "^4.16.3",

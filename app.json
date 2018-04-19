@@ -1,7 +1,7 @@
 {
   "name": "Bandwidth Masked Numbers",
   "description": "Bandwidth Sample masked numbers",
-  "repository": "https://github.com/dtolb/masked-number-api.git",
+  "repository": "https://github.com/dtolb/bw-masked-number-amd.git",
   "logo": "https://avatars2.githubusercontent.com/u/12057884?v=3&s=200",
   "keywords": ["node", "bandwidth", "catapult", "masked-numbers", "numbers", "on-demand"],
   "env": {
