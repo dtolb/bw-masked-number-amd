@@ -10,6 +10,7 @@ let db = require('./models');
 /* Express Setup */
 let app  = express();
 let http = require('http').Server(app);
+app.rootName = 'masked-number-screen';
 app.use(bodyParser.json());
 app.set('port', (process.env.PORT || 3000));
 
@@ -30,13 +31,19 @@ function startServer() {
     debug(req.url)
     var err = new Error('not found');
     err.status = 404;
-    res.sendStatus(404, 'Not Found')
+    if(!res.headersSent) {
+      res.sendStatus(404, 'Not Found')
+    }
+    next();
   });
 
   // production error handler, no stacktraces leaked to user
   app.use( (err, req, res, next) => {
     res.status(err.status || 500);
     debug(err);
+    if(res.headersSent) {
+      return;
+    }
     if (typeof(err.status) === 'undefined') {
       res.send({
         status: 'error',

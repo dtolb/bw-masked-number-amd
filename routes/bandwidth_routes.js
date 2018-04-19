@@ -18,7 +18,9 @@ router.route('/incoming-call')
 .post(db.findNumbers,
       bw.playRinging,
       bw.createBridge,
-      bw.createOutboundCall);
+      bw.createOutboundCall,
+      bw.setHangupPathWhileScreening
+      );
 
 router.route('/outbound-call-event')
 .post(bw.handleOutboundCallEvent,

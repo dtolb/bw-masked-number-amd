@@ -31,13 +31,13 @@
 <!-- Start component HTML -->
     <div class="inline-wrap">
         <div class="form-input blocks clearfix required">
-            <label for="input-tel">Number One to Bind:</label>
-            <input type="tel" value="" id="tn1" />
-            <div class="help">Accepts formats +12223334444</div>
+            <label for="input-tel">Area Code:</label>
+            <input type="tel" value="" id="areaCode" />
+            <div class="help">Accepts formats 828</div>
         </div>
         <div class="form-input blocks clearfix required">
-            <label for="input-tel">Number Two to Bind:</label>
-            <input type="tel" value="" id="tn2" />
+            <label for="input-tel">Number to Forward Calls:</label>
+            <input type="tel" value="" id="phoneNumber" />
             <div class="help">Accepts formats +12223334444</div>
         </div>
     </div>
@@ -48,8 +48,7 @@
             <thead>
                 <tr>
                     <th>Masked Number</th>
-                    <th>Number one</th>
-                    <th>Number two</th>
+                    <th>Forwards to</th>
                 </tr>
             </thead>
             <tbody id='maskedNumbersTableBody'>
@@ -80,14 +79,15 @@
         })
     }
 
-    var makeMaskedNumbers = function (num1, num2) {
+    var makeMaskedNumbers = function (areaCode, phoneNumber) {
         var maskedNumberParams = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                numbers: [num1, num2]
+                phoneNumber: phoneNumber,
+                areaCode: areaCode
             })
         };
         console.log(maskedNumberParams);
@@ -110,18 +110,17 @@
     }
 
     var submitNumbers = function () {
-        var tn1 = $('#tn1').val();
-        var tn2 = $('#tn2').val();
-        if (tn1 === '' && tn2 === '') {
+        var areaCode = $('#areaCode').val();
+        var phoneNumber = $('#phoneNumber').val();
+        if (areaCode === '' && phoneNumber === '') {
             alert('Please put both numbers');
         }
         else {
-            return makeMaskedNumbers(tn1, tn2)
+            return makeMaskedNumbers(areaCode, phoneNumber)
             .then(function (response) {
-                var maskedNumber = response.maskedNumber;
-                var numberOne = response.numbers[0];
-                var numberTwo = response.numbers[1];
-                var tableRow = '<tr class="new-row"><td class="new-cell">' + maskedNumber + '</td><td>' + numberOne + '</td><td>' + numberTwo + '</td></tr>'
+                var maskedNumber = response.bandwidthNumber;
+                var numberOne = response.forwardToNumber;
+                var tableRow = '<tr class="new-row"><td class="new-cell">' + maskedNumber + '</td><td>' + numberOne + '</td></tr>'
                 $('#maskedNumbersTableBody').prepend(tableRow);
             })
             .catch(function (error) {
@@ -131,13 +130,13 @@
         }
     };
 
-    $('#tn1').keyup(function (event) {
+    $('#areaCode').keyup(function (event) {
         if(event.keyCode == 13){
             submitNumbers();
         }
     });
 
-    $('#tn2').keyup(function (event) {
+    $('#phoneNumber').keyup(function (event) {
         if(event.keyCode == 13){
             submitNumbers();
         }
@@ -149,10 +148,9 @@
     getMaskedNumbers()
     .then(function (maskedNumbers) {
         maskedNumbers.forEach( (entry) => {
-            var maskedNumber = entry.maskedNumber;
-            var numberOne = entry.numberOne;
-            var numberTwo = entry.numberTwo;
-            var tableRow = '<tr><td>' + maskedNumber + '</td><td>' + numberOne + '</td><td>' + numberTwo + '</td></tr>'
+            var maskedNumber = entry.bandwidthNumber;
+            var numberOne = entry.forwardToNumber;
+            var tableRow = '<tr><td>' + maskedNumber + '</td><td>' + numberOne + '</td></tr>';
             $('#maskedNumbersTableBody').append(tableRow);
         })
     })

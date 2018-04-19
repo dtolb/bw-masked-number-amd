@@ -21,7 +21,7 @@ module.exports.saveBinding = (req, res, next) => {
       forwardToNumber: req.body.phoneNumber
     });
     const resBody = {
-      maskedNumber: newNumber,
+      maskedNumber: res.locals.newNumber,
       numbers: numbers
     };
     res.status('201').send(resBody);
@@ -36,6 +36,10 @@ module.exports.saveBinding = (req, res, next) => {
 };
 
 module.exports.findNumbers = async (req, res, next) => {
+  if (req.body.eventType !== 'answer') {
+    next();
+    return;
+  }
   try {
     debug('Finding number bindings');
     const bandwidthNumber = req.body.to;
@@ -60,7 +64,7 @@ module.exports.findNumbers = async (req, res, next) => {
 
 module.exports.listBindings = (req, res, next) => {
   debug('Returning Bindings');
-  req.Binding.findAll()
+  req.app.get('models').Binding.findAll()
   .then( (bindings) => {
     res.status(200).send(bindings);
   })

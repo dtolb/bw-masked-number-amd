@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo 'no tests yet'",
-    "debug": "DEBUG=masked-numbers,express* nodemon index.js",
+    "debug": "DEBUG=masked-numbers nodemon index.js",
     "start": "DEBUG=masked-numbers,express* node index.js"
   },
   "repository": {
