@@ -4,7 +4,9 @@
   "description": "Forward calls and detect voicemail",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo 'no tests yet'",
+    "debug": "DEBUG=masked-numbers,express* nodemon index.js",
+    "start": "DEBUG=masked-numbers,express* node index.js"
   },
   "repository": {
     "type": "git",
@@ -28,8 +30,11 @@
     "debug": "^3.1.0",
     "express": "^4.16.3",
     "node-bandwidth": "^2.6.3",
+    "pg": "^7.4.1",
+    "pg-hstore": "^2.3.2",
     "phone": "^2.0.0-rc.1",
     "sequelize": "^4.37.6",
+    "serve-favicon": "^2.5.0",
     "url-join": "^4.0.0"
   },
   "devDependencies": {

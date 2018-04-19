@@ -26,7 +26,7 @@ module.exports.saveBinding = (req, res, next) => {
     };
     res.status('201').send(resBody);
   }
-  catch (e) => {
+  catch (e) {
     debug('Error saving number to the database');
     debug(e);
     const err = new Error('Couldn\'t save to database');

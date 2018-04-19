@@ -74,7 +74,7 @@ module.exports.createOutboundCall = async (req, res, next) => {
       from        : req.body.from,
       to          : res.locals.forwardToNumber,
       callTimeout : 15,
-      callbackUrl : urlJoin(res.locals.baseUrl, 'outbound-call-event');
+      callbackUrl : urlJoin(res.locals.baseUrl, 'outbound-call-event'),
       bridgeId    : res.locals.bridgeId,
     };
     callData.tag = JSON.stringify({
@@ -199,6 +199,7 @@ module.exports.handleGather = async (req, res, next) => {
     debug(`Error occured handling gather event ${event.callId}`);
     next(e);
   }
+};
 
 module.exports.connectCalls = async (req, res, next) => {
   if(res.locals.sentCallToVoicemail) {

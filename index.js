@@ -2,8 +2,10 @@
 const express    = require('express');
 const bodyParser = require('body-parser');
 const path       = require('path');
-const ringing = 'https://s3.amazonaws.com/bw-demo/ring.mp3';
-const forwardTo = require('./fowardConfigs.json');
+const debug = require('debug')('masked-numbers');
+const favicon = require('serve-favicon');
+
+let db = require('./models');
 
 /* Express Setup */
 let app  = express();
