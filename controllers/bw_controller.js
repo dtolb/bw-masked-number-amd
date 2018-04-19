@@ -292,6 +292,9 @@ module.exports.voicemailFlow = async (req, res, next) => {
 };
 
 module.exports.hangupFlow = async (req, res, next) => {
+  if (req.body.eventType !== 'hangup') {
+    return;
+  }
   try {
     const event = req.body;
     const call = bwAPI.Call.get(event.tag);
@@ -326,10 +329,10 @@ module.exports.searchAndOrderNumber = async (req, res, next) => {
 
 module.exports.updateNumberToApplication = async (req, res, next) => {
   try {
-    debug(`Updating Number to application: ${req.app.applicationId}`);
+    debug(`Updating Number to application: ${app.applicationId}`);
     await bwAPI.PhoneNumber.update(res.locals.newNumber.id, {
       name: req.body.phoneNumber.toString(),
-      applicationId: req.app.applicationId
+      applicationId: app.applicationId
     });
     next();
   }

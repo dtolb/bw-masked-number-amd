@@ -21,8 +21,8 @@ module.exports.saveBinding = (req, res, next) => {
       forwardToNumber: req.body.phoneNumber
     });
     const resBody = {
-      maskedNumber: res.locals.newNumber,
-      numbers: numbers
+      bandwidthNumber: res.locals.newNumber.number,
+      forwardToNumber: req.body.phoneNumber
     };
     res.status('201').send(resBody);
   }
