@@ -1,0 +1,140 @@
+button{
+	display:inline-block;
+	position: relative;
+	padding: var(--m) var(--xl);
+	border-radius: var(--button-radius);
+	background-color: var(--bw-blue);
+	border: none;
+	color: #fff;
+	font-family: 'Overpass', sans-serif;
+	font-size: .9em;
+	font-weight: 700;
+	text-transform:uppercase;
+	cursor: pointer;
+	cursor: hand;
+	overflow:hidden;
+	-webkit-transition: all 0.3s;
+	-moz-transition: all 0.3s;
+	transition: all 0.3s;
+}
+button:hover{
+	background-color: var(--bw-dark-blue);
+	box-shadow: var(--shadow);
+}
+button:focus{
+	outline: none;
+}
+button:active{
+	top:2px;
+	box-shadow: none;
+}
+/**, *:after, *:before {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}*/
+.secondary{
+	background: var(--light-opacity);
+	border: var(--border-white);
+}
+.secondary:hover{
+	background-color: var(--dark-opacity);
+}
+.hover-go:hover:before{
+	left: 85%;
+}
+.hover-go:before{
+	left: 160%;
+    top: 0;
+}
+.hover-back:before{
+	left: -60%;
+    top: 0;
+}
+.hover-back:hover:before{
+	left:8%;
+}
+.hover-go:before, .hover-back:before {
+    position: absolute;
+    height: 100%;
+    font-size: 125%;
+    line-height: 3.5;
+    color: #fff;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    transition: all 0.3s;
+}
+.right:before {
+    content: "\f116";
+}
+.left:before{
+	content: "\f116";
+	-webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
+.hover-go:before, .hover-back:before{
+    font-family: 'Bandwidth';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 3;
+    -webkit-font-smoothing: antialiased;
+}
+.hover-go:after, .hover-back:after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    transition: all 0.3s;
+}
+.light{
+	color: var(--bw-dark-blue);
+	border:	var(--bw-dark-blue-border);
+}
+.light:hover{
+	color: #fff;
+	background-color: var(--bw-dark-blue);
+}
+.medium{
+	font-size: .8em;
+	padding:13px 40px;
+}
+button.small{
+	font-size: .6em;
+	padding:11px 30px;
+}
+.submit{
+   background-color: var(--bw-green);
+}
+.submit:hover{
+	background-color: var(--bw-dark-green);
+}
+.cancel{
+	background-color: var(--bw-red);
+}
+.cancel:hover{
+	background-color: var(--bw-dark-red);
+}
+button:disabled{
+	background-color: var(--disabled-grey);
+	color: var(--med-grey);
+	opacity: .5;
+}
+button:disabled:hover{
+	background-color: var(--disabled-grey);
+	color: var(--med-grey);
+	box-shadow: none;
+	cursor: inherit;
+	opacity: .5;
+}
+button:disabled:hover.right:before {
+    content: "";
+}
+button:disabled:hover.left:before{
+	content: "";

@@ -12,70 +12,27 @@ module.exports.addBindingToContext = (req, res, next) => {
   next();
 }
 
-module.exports.checkIfBindingExists = (req, res, next) => {
-  const Binding = req.app.get('models').Binding;
-  const numbers = req.body.numbers;
-  let numbersAlreadyBound = false;
-  Binding.findOne({
-    where: {
-      $or: [
-        {
-          $and: {
-            numberOne: numbers[0],
-            numberTwo: numbers[1]
-          }
-        },
-        {
-          $and: {
-            numberOne: numbers[1],
-            numberTwo: numbers[0]
-          }
-        }
-      ]
-    }
-  })
-  .then( (binding) => {
-    if (binding) {
-      numbersAlreadyBound = true;
-      const errMessage = 'Numbers: ' + req.body.numbers[0] + ' and ' +
-        req.body.numbers[1] + ' are already bound to: ' + binding.maskedNumber;
-      debug(errMessage);
-      let err = new Error(errMessage);
-      err.status = 409;
-      next(err);
-    }
-    else {
-      debug('Numbers: ' + req.body.numbers[0] + ' and ' + req.body.numbers[1] +
-        ' are not bound');
-      next();
-    }
-  });
-};
-
 module.exports.saveBinding = (req, res, next) => {
-  debug('Saving new Binding');
-  const newNumber = req.newNumber;
-  const numbers = req.body.numbers;
-  Binding.create({
-    maskedNumber: req.newNumber,
-    numberOne: req.body.numbers[0],
-    numberTwo: req.body.numbers[1]
-  })
-  .then( (binding) => {
-    debug('New binding saved as: ' + newNumber);
-    resBody = {
+  try {
+    debug('Saving new Binding');
+    const numbers = req.body.numbers;
+    const binding = req.app.get('models').Binding.create({
+      bandwidthNumber: res.locals.newNumber.number,
+      forwardToNumber: req.body.phoneNumber
+    });
+    const resBody = {
       maskedNumber: newNumber,
       numbers: numbers
-    }
+    };
     res.status('201').send(resBody);
-  })
-  .catch( (reason) => {
-    debug(reason);
+  }
+  catch (e) => {
+    debug('Error saving number to the database');
+    debug(e);
     const err = new Error('Couldn\'t save to database');
     err.status = 500;
     next(err);
-  });
-
+  }
 };
 
 module.exports.findNumbers = async (req, res, next) => {

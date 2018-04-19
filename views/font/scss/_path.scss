@@ -1,0 +1,21 @@
+// Font paths
+// -------------------------
+
+@font-face {
+  font-family: "Bandwidth";
+  src: url("../fonts/Bandwidth_34eef440b4b051f3bd41c51dd36ec882.eot");
+  src: url("../fonts/Bandwidth_34eef440b4b051f3bd41c51dd36ec882.eot?#iefix") format("embedded-opentype"),
+       url("../fonts/Bandwidth_34eef440b4b051f3bd41c51dd36ec882.woff2") format("woff2"),
+       url("../fonts/Bandwidth_34eef440b4b051f3bd41c51dd36ec882.woff") format("woff"),
+       url("../fonts/Bandwidth_34eef440b4b051f3bd41c51dd36ec882.ttf") format("truetype"),
+       url("../fonts/Bandwidth_34eef440b4b051f3bd41c51dd36ec882.svg#Bandwidth") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: "Bandwidth";
+    src: url("../fonts/Bandwidth_34eef440b4b051f3bd41c51dd36ec882.svg#Bandwidth") format("svg");
+  }
+}

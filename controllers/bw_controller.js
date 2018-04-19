@@ -39,7 +39,7 @@ module.exports.playRinging = async (req, res, next) => {
     debug(`Error when trying to play ringing on callId: ${req.body.callId}`);
     next(e);
   }
-}
+};
 
 module.exports.createBridge = async (req, res, next) => {
   if (req.body.eventType !== 'answer') {
@@ -92,13 +92,19 @@ module.exports.createOutboundCall = async (req, res, next) => {
 };
 
 const sendCallToVoiceMail = async (callId, baseUrl) => {
-  await bwAPI.Call.stopAudioFilePlayback(callId);
-  //update the callback url to make life easier
-  const callbackUrl = urlJoin(baseUrl, 'voicemail-flow');
-  await bwAPI.Call.update(callId, {callbackUrl});
-  //Start the voicemail prompt
-  const vmPrompt = 'Please record your voicemail after the beep.';
-  await bwAPI.Call.speakSentence(callId, vmPrompt);
+  try {
+    await bwAPI.Call.stopAudioFilePlayback(callId);
+    //update the callback url to make life easier
+    const callbackUrl = urlJoin(baseUrl, 'voicemail-flow');
+    await bwAPI.Call.update(callId, {callbackUrl});
+    //Start the voicemail prompt
+    const vmPrompt = 'Please record your voicemail after the beep.';
+    await bwAPI.Call.speakSentence(callId, vmPrompt);
+  }
+  catch (e) {
+    debug(`Error sending call to voicemail: ${callId}`);
+    throw(e);
+  }
 };
 
 
@@ -126,7 +132,7 @@ module.exports.handleOutboundCallEvent = async (req, res, next) => {
     debug('Error happened during the outbound call answer handling');
     next(e);
   }
-}
+};
 
 module.exports.updateUrlToGather = async (req, res, next) => {
   if (req.body.eventType !== 'answer') {
@@ -142,8 +148,7 @@ module.exports.updateUrlToGather = async (req, res, next) => {
     debug(`Error happened updating callback url: ${req.body.callId}`);
     next(e);
   }
-
-}
+};
 
 module.exports.createGather = async (req, res, next) => {
   if (req.body.eventType !== 'answer') {
@@ -167,90 +172,59 @@ module.exports.createGather = async (req, res, next) => {
   }
 };
 
-// const hangerupper = async (callId) => {
-//   try {
-//     console.log('hangingup');
-//     return await bwAPI.Call.hangup(callId);
-//   }
-//   catch (e) {
-//     console.log('Error hanging up')
-//     console.log(e);
-//   }
-// }
-
-module.exports.determineGatherReason = async (req, res, next) => {
-  res.locals.tag = JSON.parse(event.tag); //Parse the JSON from the tag
-  if (req.body.eventType === 'hangup'){
-    res.locals.hangup = true;
-  }
-  else if (req.body.reason !== 'max-digits' || req.body.digits !== '1') {
-    res.locals.connectCall = false;
-    res.locals.hangup = false;
-  }
-  else {
-    res.locals.connectCall = true;
-    res.locals.hangup = false;
-  }
-  next();
-};
-
-module.exports.shouldHangupOutboundCall = async (req, res, next) => {
-  if (res.locals.connectCall || res.locals.hangup) {
-    next();
-    return;
-  }
+module.exports.handleGather = async (req, res, next) => {
   try {
-    if (req.body.reason !== 'hung-up') {
-      await bwAPI.Call.hangup(req.body.callId); //hangup outbound call
+    const event = req.body;
+    const tag = JSON.parse(event.tag); //Parse the JSON from the tag
+    const iCallId = tag.iCallId;
+
+    if (event.eventType === 'hangup') {
+      next();
+      res.locals.sentCallToVoicemail = true;
+      return;
     }
-    next();
-  }
-  catch (e) {
-    debug(`Error hanging up after gather: ${req.body.callId}`);
-    next(e);
-  }
-};
+    // The catch all case
+    if (event.reason !== 'max-digits' || event.digits !== '1') {
+      if (event.reason !== 'hung-up') {
+        await bwAPI.Call.hangup(event.callId); //hangup outbound call
+      }
 
-module.exports.shouldSendtoVoicemail = async (req, res, next) => {
-  if (res.locals.hangup) {
-    next();
-    return;
-  }
-  try {
-    if (!res.locals.connectCall) {
-      sendCallToVoiceMail(res.locals.tag.iCallId, res.locals.baseUrl);
+      await sendCallToVoiceMail(iCallId);
+      res.locals.sentCallToVoicemail = true;
+      next();
+      return;
     }
   }
   catch (e) {
-    debug(`Error Sending call to voicemail: ${res.locals.tag.iCallId}`);
+    debug(`Error occured handling gather event ${event.callId}`);
     next(e);
   }
-};
 
-
-module.exports.connectCalls = async (req, res, net) => {
-  if (res.locals.hungup || !res.locals.connectCall) {
+module.exports.connectCalls = async (req, res, next) => {
+  if(res.locals.sentCallToVoicemail) {
     next();
     return;
   }
   try {
-    const tag = res.locals.tag;
-    await bwAPI.Call.stopAudioFilePlayback(tag.iCallId);
-    //accept the call
+    const event = req.body;
+    const tag = JSON.parse(event.tag); //Parse the JSON from the tag
+    const iCallId = tag.iCallId;
+    await bwAPI.Call.stopAudioFilePlayback(iCallId);
     await bwAPI.Bridge.update(tag.bridgeId, {
       bridgeAudio: true,
-      callIds: [tag.iCallId, req.body.callId]
+      callIds: [iCallId, event.callId]
     });
     next();
+    return;
   }
   catch (e) {
-    debug(`Error happened during the gather flow: ${req.body.callId}`);
+    debug(`Error happened trying to connect the calls: ${req.body.callId}`);
     next(e);
   }
-};
+}
 
 module.exports.updateCallbackUrls = async (req, res, next) => {
-  if (res.locals.hungup || !res.locals.connectCall) {
+  if(res.locals.sentCallToVoicemail) {
     next();
     return;
   }
@@ -264,6 +238,7 @@ module.exports.updateCallbackUrls = async (req, res, next) => {
       callbackUrl : callbackUrl,
       tag         : res.locals.tag.iCallId
     });
+    next();
   }
   catch (e) {
     debug(`Error updating callback urls: ${req.body.callId} & ${res.locals.tag.iCallId}`);
@@ -271,7 +246,7 @@ module.exports.updateCallbackUrls = async (req, res, next) => {
   }
 };
 
-app.post('/voicemail-flow', async (req, res) => {
+module.exports.voicemailFlow = async (req, res, next) => {
   try {
     const event = req.body;
     if (event.eventType === 'speak' && event.state === 'PLAYBACK_STOP'){
@@ -280,25 +255,22 @@ app.post('/voicemail-flow', async (req, res) => {
     }
     else if (event.eventType === 'playback' && event.status === 'done' && event.tag !== 'ringing') {
       // The beep.mp3 is done playing, so enable recording;
-      console.log('enabling recording');
       await bwAPI.Call.enableRecording(event.callId);
     }
     else if (event.eventType === 'hangup') {
       // The call hungup
       const recordings = await bwAPI.Call.getRecordings(event.callId);
-      console.log(recordings);
+      debug(recordings);
     }
-    else {
-      console.log('Unhandled event in "/voicemail-flow"');
-    }
+    next();
   }
   catch (e) {
-    console.log('Error happened in the voicemail flow');
-    console.log(e);
+    debug(`Error happened in the voicemail flow: ${req.body.callId}`);
+    next(e);
   }
-});
+};
 
-app.post('/hangup-flow', async (req, res) => {
+module.exports.hangupFlow = async (req, res, next) => {
   try {
     const event = req.body;
     const call = bwAPI.Call.get(event.tag);
@@ -307,7 +279,111 @@ app.post('/hangup-flow', async (req, res) => {
     }
   }
   catch (e) {
-    console.log('Error hanging up call');
-    console.log(e);
+    debug(`Error hanging up call: ${req.body.tag}`);
+    next(e);
   }
-})
+};
+
+module.exports.searchAndOrderNumber = async (req, res, next) => {
+  try {
+    const areaCode = req.body.areaCode;
+    const numberName = req.body.phoneNumber;
+    const numbers = await bwApi.AvailableNumber.searchAndOrder('local', {
+      areaCode : areaCode,
+      quantity : 1
+    })
+    // Make number name the two numbers binded
+    res.locals.newNumber = numbers[0];
+    debug(`Found New Number: ${res.locals.newNumber.number} for: ${numberName}`);
+    next();
+  }
+  catch (e) {
+    debug(`Error searching for phone number`);
+    next(e);
+  };
+}
+
+module.exports.updateNumberToApplication = async (req, res, next) => {
+  try {
+    debug(`Updating Number to application: ${req.app.applicationId}`);
+    await bwApi.PhoneNumber.update(res.locals.newNumber.id, {
+      name: req.body.phoneNumber.toString(),
+      applicationId: req.app.applicationId
+    });
+    next();
+  }
+  catch (e) {
+    debug(`Error assigning application to numberId: ${res.locals.numberId}`);
+    next(e);
+  }
+}
+
+
+/**
+ * Below here is setup logic. This is only run once per instance of this application
+ * The main use of the logic below is for one click deployments. Most likely,
+ * you would NOT need this in a production envirnonment.
+ *
+ * This handles the oddness of heroku sleep and not knowing the heroku url until
+ * deploying.
+ */
+
+//Checks the current Applications to see if we have one.
+module.exports.checkOrCreateApplication = (req, res, next) => {
+  if (app.applicationId) {
+    next();
+    return;
+  }
+  app.callbackUrl = getBaseUrlFromReq(req);
+  const appName = `${req.app.rootName} on ${req.app.callbackUrl}`;
+  debug('appName: ' + appName);
+  bwApi.Application.list({
+    size: 1000
+  })
+  .then( (apps) => {
+    const appId = searchForApplication(apps.applications, appName);
+    if(appId !== false) {
+      debug('Application Found: ' + appId);
+      app.applicationId = appId;
+      next();
+    }
+    else {
+      debug('No Application Found');
+      newApplication(appName, app.callbackUrl)
+      .then( (application) => {
+        debug('Created Application: ' + application.id);
+        app.applicationId = application.id;
+        next();
+      });
+    }
+  })
+  .catch( (reason) => {
+    debug(reason);
+    next(reason);
+  });
+};
+
+// Searches for applicatoin by name
+const searchForApplication = (applications, name) => {
+  for (var i = 0; i < applications.length; i+=1) {
+      if ( applications[i].name === name) {
+        return applications[i].id;
+      }
+    }
+  return false;
+};
+
+// Creates a new application with callbacks set to this server
+const newApplication = (appName, url) => {
+  return bwApi.Application.create({
+    name: appName,
+    incomingMessageUrl: url + '/bandwidth/messages',
+    incomingCallUrl: url + '/bandwidth/calls',
+    callbackHttpMethod: 'post',
+    autoAnswer: true
+  });
+};
+
+const getBaseUrlFromReq = (req) => {
+  return 'http://' + req.hostname;
+};

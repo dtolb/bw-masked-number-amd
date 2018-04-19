@@ -4,34 +4,34 @@ const bw = require('../controllers/bw_controller.js');
 const db = require('../controllers/db_controller.js');
 const debug = require('debug')('masked-numbers');
 
-router.use('/',
-           bw.callBackResponder,
-           db.addBindingToContext
-           );
+router.use('/', bw.callBackResponder, db.addBindingToContext);
 
-router.route('/messages')
-  .post(
-    bw.validateMessage,
-    db.findNumbers,
-    bw.makeMessage,
-    bw.sendMessage
-    );
+// router.route('/messages')
+//   .post(
+//     bw.validateMessage,
+//     db.findNumbers,
+//     bw.makeMessage,
+//     bw.sendMessage
+//     );
 
 router.route('/incoming-call')
 .post(db.findNumbers,
       bw.playRinging,
       bw.createBridge,
-      bw.createOutboundCall,
-      );
+      bw.createOutboundCall);
 
 router.route('/outbound-call-event')
-  .post();
+.post(bw.handleOutboundCallEvent,
+      bw.updateUrlToGather,
+      bw.createGather);
 
 router.route('/gather-flow')
-    .post();
+.post(bw.handleGather,
+      bw.connectCalls,
+      bw.updateCallbackUrls);
 
 router.route('/voicemail-flow')
-    .post();
+    .post(bw.voicemailFlow);
 
 router.route('/hangup-flow')
-    .post();
+    .post(bw.hangupFlow);

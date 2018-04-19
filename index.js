@@ -1,5 +1,4 @@
 /* Import our Modules */
-const Bandwidth = require('node-bandwidth');
 const express    = require('express');
 const bodyParser = require('body-parser');
 const path       = require('path');
@@ -11,16 +10,6 @@ let app  = express();
 let http = require('http').Server(app);
 app.use(bodyParser.json());
 app.set('port', (process.env.PORT || 3000));
-
-/* Setup our Bandwidth information */
-const myCreds = {
-  userId    : process.env.BANDWIDTH_USER_ID,
-  apiToken  : process.env.BANDWIDTH_API_TOKEN,
-  apiSecret : process.env.BANDWIDTH_API_SECRET,
-};
-
-const bwAPI = new Bandwidth(myCreds);
-
 
 function startServer() {
   debug('Starting Server');

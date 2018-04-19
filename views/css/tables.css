@@ -1,0 +1,130 @@
+.x2 {
+    font-size: 2em;
+}
+.table-wrap {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 5px 5px 0 0;
+    overflow-x: auto;
+    position: relative;
+}
+.shadow-r {
+    box-shadow: inset -15px 0 10px -10px rgba(0,0,0,.2);
+}
+.shadow-l {
+    box-shadow: inset 15px 0 10px -10px rgba(0,0,0,.2);
+}
+.shadow-rl {
+    box-shadow: inset -15px 0 10px -10px rgba(0,0,0,.2), inset 15px 0 10px -10px rgba(0,0,0,.2);
+}
+.table-wrap table {
+    width: 100%;
+}
+.table-wrap th {
+    color: #fff;
+    font-weight: 300;
+    text-transform: uppercase;
+    background: var(--bw-dark-blue);
+    text-align: left;
+    margin: 0;
+    padding: 10px 15px;
+    white-space: nowrap;
+}
+.table-wrap th.sort a,
+.table-wrap th.sort a.active i {
+    color: #fff;
+    transition: all 0.2s ease;
+}
+.table-wrap th.sort a:after {
+    background-color: #fff;
+}
+.table-wrap th.sort a i {
+    color: var(--bw-help-text);
+    transition: all 0.2s ease;
+}
+.table-wrap th.sort a:hover i {
+    color: #fff;
+}
+.table-wrap td {
+    text-align: left;
+    background: transparent;
+    border: 1px solid rgba(0,0,0,.15);
+    border-width: 0 1px 1px 0;
+    margin: 0;
+    padding: 10px 15px;
+    white-space: nowrap;
+    transition: 0.2s ease all;
+}
+.table-wrap td:last-child {
+    border-right: 0;
+}
+.table-wrap tr:last-child td {
+    border-bottom: 0;
+}
+.table-wrap th.a-right,
+.table-wrap td.a-right {
+    text-align: right;
+}
+.table-wrap th.a-center,
+.table-wrap td.a-center {
+    text-align: center;
+}
+.table-wrap tr.details td {
+    box-shadow: inset 5px 0 0 rgba(0,0,0,.12);
+    border: 0;
+    padding: 0 15px 0 20px;
+    white-space: inherit;
+}
+.table-wrap tr.details td.open {
+    padding: 10px 15px 10px 20px;
+    border-bottom: 1px solid rgba(0,0,0,.15);
+}
+.table-wrap tr.details td .slide {
+    display: none;
+}
+.table-wrap td.actions {
+    padding: 0 15px;
+}
+.table-wrap td.actions a {
+    text-decoration: none;
+    transition: 0.2s ease all;
+}
+.table-wrap td.new-cell:before {
+    content: "New: ";
+    color: var(--bw-blue);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.table-wrap td.status {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.table-wrap td.status.info {
+    color: var(--bw-help-text);
+}
+.table-wrap td.status.error {
+    color: #e8562e;
+}
+.table-wrap td.status.success {
+    color: #6cbf0d;
+}
+.table-wrap table.small {
+    font-size: 0.9em;
+}
+.table-wrap table.small th,
+.table-wrap table.small td {
+    padding: 3px 8px;
+}
+.table-wrap table.small tr.details td {
+    padding: 0 8px 0 13px;
+}
+.table-wrap table.small tr.details td.open {
+    padding: 3px 8px 3px 13px;
+}
+.load-more {
+    text-align: center;
+    border: 1px solid rgba(0,0,0,.15);
+    border-top: 0;
+    background: #fff;
+    padding: 10px 15px;
+}

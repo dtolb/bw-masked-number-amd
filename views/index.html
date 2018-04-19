@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bandwidth Masked Number Generator</title>
+<link href="font/css/styles.min.css" rel="stylesheet">
+<link href="css/base.css" rel="stylesheet">
+<link href="css/inputs.css" rel="stylesheet">
+<link href="css/buttons.css" rel="stylesheet">
+<link href="css/tables.css" rel="stylesheet">
+<style>
+    .main-container{
+        width: 60%;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    .main-container button{
+        float: right;
+    }
+    .table-wrap{
+        margin-top: 5em;
+        clear: both;
+    }
+</style>
+</head>
+<body>
+<div class="main-container">
+    <h1>Masked Number Generator</h1>
+    <hr />
+    <br />
+<!-- Start component HTML -->
+    <div class="inline-wrap">
+        <div class="form-input blocks clearfix required">
+            <label for="input-tel">Number One to Bind:</label>
+            <input type="tel" value="" id="tn1" />
+            <div class="help">Accepts formats +12223334444</div>
+        </div>
+        <div class="form-input blocks clearfix required">
+            <label for="input-tel">Number Two to Bind:</label>
+            <input type="tel" value="" id="tn2" />
+            <div class="help">Accepts formats +12223334444</div>
+        </div>
+    </div>
+    <button class="submit hover-go right" id="maskedNumberButton">Create Masked Number</button>
+
+    <div class="table-wrap">
+        <table cellpadding="0" cellspacing="0" class="small" id='maskedNumbersTable'>
+            <thead>
+                <tr>
+                    <th>Masked Number</th>
+                    <th>Number one</th>
+                    <th>Number two</th>
+                </tr>
+            </thead>
+            <tbody id='maskedNumbersTableBody'>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- End component HTML -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="js/base.js"></script>
+<script src="js/index.js"></script>
+<scirpt src="js/tables.js"></scirpt>
+<script type="text/javascript">
+
+    var getMaskedNumbers = function () {
+        var maskedNumberParams = {
+            method: 'GET',
+            mode: 'cors'
+        }
+        var maskeNumberRequest = new Request('./v1/bindings', maskedNumberParams);
+        return fetch(maskeNumberRequest)
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (j) {
+            console.log(j);
+            return j;
+        })
+    }
+
+    var makeMaskedNumbers = function (num1, num2) {
+        var maskedNumberParams = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                numbers: [num1, num2]
+            })
+        };
+        console.log(maskedNumberParams);
+        var maskeNumberRequest = new Request('./v1/bindings', maskedNumberParams);
+        var isOk;
+        return fetch(maskeNumberRequest)
+        .then(function (response) {
+            isOk = response.ok
+            return response.json();
+        })
+        .then(function (j) {
+            if(isOk) {
+                return j;
+            }
+            else {
+                throw new Error(j.error);
+                return;
+            }
+        });
+    }
+
+    var submitNumbers = function () {
+        var tn1 = $('#tn1').val();
+        var tn2 = $('#tn2').val();
+        if (tn1 === '' && tn2 === '') {
+            alert('Please put both numbers');
+        }
+        else {
+            return makeMaskedNumbers(tn1, tn2)
+            .then(function (response) {
+                var maskedNumber = response.maskedNumber;
+                var numberOne = response.numbers[0];
+                var numberTwo = response.numbers[1];
+                var tableRow = '<tr class="new-row"><td class="new-cell">' + maskedNumber + '</td><td>' + numberOne + '</td><td>' + numberTwo + '</td></tr>'
+                $('#maskedNumbersTableBody').prepend(tableRow);
+            })
+            .catch(function (error) {
+                alert(error);
+            })
+
+        }
+    };
+
+    $('#tn1').keyup(function (event) {
+        if(event.keyCode == 13){
+            submitNumbers();
+        }
+    });
+
+    $('#tn2').keyup(function (event) {
+        if(event.keyCode == 13){
+            submitNumbers();
+        }
+    });
+
+    $('#maskedNumberButton').click(submitNumbers)
+
+    //makeMaskedNumbers('+19197891146', '+14153084916');
+    getMaskedNumbers()
+    .then(function (maskedNumbers) {
+        maskedNumbers.forEach( (entry) => {
+            var maskedNumber = entry.maskedNumber;
+            var numberOne = entry.numberOne;
+            var numberTwo = entry.numberTwo;
+            var tableRow = '<tr><td>' + maskedNumber + '</td><td>' + numberOne + '</td><td>' + numberTwo + '</td></tr>'
+            $('#maskedNumbersTableBody').append(tableRow);
+        })
+    })
+</script>
+</body>
+</html>
