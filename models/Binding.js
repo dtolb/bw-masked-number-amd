@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  return sequelize.define('Binding', {
+  var Binding = sequelize.define('Binding', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -16,4 +16,9 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     }
   });
+
+  Binding.associate = function (models) {
+    models.Binding.hasMany(models.ScreenedNumber);
+  };
+  return Binding;
 };

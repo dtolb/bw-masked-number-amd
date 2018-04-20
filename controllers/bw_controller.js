@@ -42,6 +42,19 @@ module.exports.playRinging = async (req, res, next) => {
   }
 };
 
+module.exports.sendToVoicemail = async (req, res, next) => {
+  if (!res.locals.screenCall) {
+    next();
+    return;
+  }
+  try {
+    await sendCallToVoiceMail(req.body.callId, res.locals.baseUrl);
+  }
+  catch (e) {
+    debug(`Error screening call: ${req.body.callId}`);
+  }
+}
+
 module.exports.createBridge = async (req, res, next) => {
   if (req.body.eventType !== 'answer') {
     //ignore incoming call event and others
@@ -109,7 +122,9 @@ module.exports.setHangupPathWhileScreening = async (req, res, next) => {
     debug(`Error the call for hangup during screen: ${req.body.callId}`);
     next(e);
   }
-}
+};
+
+
 const sendCallToVoiceMail = async (callId, baseUrl) => {
   try {
     await bwAPI.Call.stopAudioFilePlayback(callId);
@@ -125,8 +140,6 @@ const sendCallToVoiceMail = async (callId, baseUrl) => {
     throw(e);
   }
 };
-
-
 
 module.exports.handleOutboundCallEvent = async (req, res, next) => {
   try {
@@ -181,7 +194,7 @@ module.exports.createGather = async (req, res, next) => {
       maxDigits : 1,
       tag       : JSON.stringify(res.locals.tag), //Pass the tag to the gather
       prompt    : {
-        sentence : "Please press 1 to accept the call, or 2 to send to voicemail"
+        sentence : "Please press 1 to accept the call, 2 to send to voice mail, or 3 to permanently screen calls from this number."
       }
     };
     const gather = await bwAPI.Call.createGather(req.body.callId, gatherData);
@@ -206,6 +219,8 @@ module.exports.handleGather = async (req, res, next) => {
       next();
       return;
     }
+    //add the original callId to the context
+    res.locals.iCall = await bwAPI.Call.get(iCallId);
     // The catch all case
     if (event.reason !== 'max-digits' || event.digits !== '1') {
       if (event.reason !== 'hung-up') {
