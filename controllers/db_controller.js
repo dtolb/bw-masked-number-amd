@@ -1,4 +1,5 @@
 const debug = require('debug')('masked-numbers');
+const Phone = require('phone');
 let db = {};
 
 const arraysEqual = (arr1, arr2) => {
@@ -35,7 +36,44 @@ module.exports.saveBinding = (req, res, next) => {
   }
 };
 
-module.exports.findNumbers = async (req, res, next) => {
+const fetchFromDB = async (bandwidthNumber, table) => {
+  try {
+    const binding = await table.find({
+      where: {bandwidthNumber}
+    });
+    if (binding) {
+      return binding.forwardToNumber;
+    }
+    else {
+      debug(`Unknown call to ${bandwidthNumber}`);
+      const err = new Error('Couldn\'t find masked number in database');
+      throw(err);
+    }
+  }
+  catch (e) {
+    debug(`Error finding phone number: ${phoneNumber} in db`);
+    throw(e);
+  }
+}
+
+module.exports.findNumbersFromRecording = async (req, res, next) => {
+  if (req.body.eventType !== 'recording' && req.body.status !== 'complete') {
+    next();
+    return;
+  }
+  try {
+    const bandwidthNumber = res.locals.bandwidthNumber;
+    const table = req.app.get('models').Binding;
+    res.locals.forwardToNumber = await fetchFromDB(bandwidthNumber, table);
+    next();
+  }
+  catch (e) {
+    debug(`Couldn't fetch number: ${res.locals.phoneNumber} from DB`);
+    next(e);
+  }
+}
+
+module.exports.findNumbersFromAnswer = async (req, res, next) => {
   if (req.body.eventType !== 'answer') {
     next();
     return;
@@ -43,18 +81,9 @@ module.exports.findNumbers = async (req, res, next) => {
   try {
     debug('Finding number bindings');
     const bandwidthNumber = req.body.to;
-    const binding = await res.locals.Binding.find({
-      where: {bandwidthNumber}
-    });
-    if (binding) {
-      res.locals.forwardToNumber = binding.forwardToNumber;
-      next();
-    }
-    else {
-      debug(`Unknown call to ${bandwidthNumber}`);
-      const err = new Error('Couldn\'t find masked number in database');
-      next(err);
-    }
+    const table = req.app.get('models').Binding;
+    res.locals.forwardToNumber = await fetchFromDB(bandwidthNumber, table);
+    next();
   }
   catch (e) {
     debug('Error fetching number from the database');

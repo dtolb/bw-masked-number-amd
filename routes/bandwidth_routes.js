@@ -15,12 +15,11 @@ router.use('/', bw.callBackResponder, db.addBindingToContext);
 //     );
 
 router.route('/incoming-call')
-.post(db.findNumbers,
+.post(db.findNumbersFromAnswer,
       bw.playRinging,
       bw.createBridge,
       bw.createOutboundCall,
-      bw.setHangupPathWhileScreening
-      );
+      bw.setHangupPathWhileScreening);
 
 router.route('/outbound-call-event')
 .post(bw.handleOutboundCallEvent,
@@ -33,7 +32,12 @@ router.route('/gather-flow')
       bw.updateCallbackUrls);
 
 router.route('/voicemail-flow')
-    .post(bw.voicemailFlow);
+.post(bw.voicemailFlow);
 
 router.route('/hangup-flow')
-    .post(bw.hangupFlow);
+.post(bw.hangupFlow);
+
+router.route('/recording-complete')
+.post(bw.getCallAndMediaFromRecording,
+      db.findNumbersFromRecording,
+      bw.sendMMSWithRecordingToNumber);

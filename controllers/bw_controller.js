@@ -106,7 +106,7 @@ module.exports.setHangupPathWhileScreening = async (req, res, next) => {
     });
   }
   catch (e) {
-    debug(`Error updating the call for hangup during screen: ${req.body.callId}`);
+    debug(`Error the call for hangup during screen: ${req.body.callId}`);
     next(e);
   }
 }
@@ -149,7 +149,7 @@ module.exports.handleOutboundCallEvent = async (req, res, next) => {
     return;
   }
   catch (e) {
-    debug('Error happened during the outbound call answer handling');
+    debug('Error during the outbound call answer handling');
     next(e);
   }
 };
@@ -166,7 +166,7 @@ module.exports.updateUrlToGather = async (req, res, next) => {
     next();
   }
   catch (e) {
-    debug(`Error happened updating callback url: ${req.body.callId}`);
+    debug(`Error updating callback url: ${req.body.callId}`);
     next(e);
   }
 };
@@ -189,7 +189,7 @@ module.exports.createGather = async (req, res, next) => {
     next();
   }
   catch (e) {
-    debug(`Error happened creating gather url: ${req.body.callId}`);
+    debug(`Error creating gather url: ${req.body.callId}`);
     next(e);
   }
 };
@@ -219,7 +219,7 @@ module.exports.handleGather = async (req, res, next) => {
     next();
   }
   catch (e) {
-    debug(`Error occured handling gather event ${req.body.callId}`);
+    debug(`Error handling gather event ${req.body.callId}`);
     next(e);
   }
 };
@@ -242,7 +242,7 @@ module.exports.connectCalls = async (req, res, next) => {
     return;
   }
   catch (e) {
-    debug(`Error happened trying to connect the calls: ${req.body.callId}`);
+    debug(`Error trying to connect the calls: ${req.body.callId}`);
     next(e);
   }
 }
@@ -276,6 +276,10 @@ module.exports.voicemailFlow = async (req, res, next) => {
       await bwAPI.Call.playAudioFile(event.callId, "https://s3.amazonaws.com/bw-demo/beep.mp3");
     }
     else if (event.eventType === 'playback' && event.status === 'done' && event.tag !== 'ringing') {
+      //Change to recording complete to send message with recording
+      await bwAPI.Call.update(event.callId, {
+        callbackUrl: urlJoin(res.locals.baseUrl, 'recording-complete')
+      });
       // The beep.mp3 is done playing, so enable recording;
       await bwAPI.Call.enableRecording(event.callId);
     }
@@ -286,10 +290,51 @@ module.exports.voicemailFlow = async (req, res, next) => {
     }
   }
   catch (e) {
-    debug(`Error happened in the voicemail flow: ${req.body.callId}`);
+    debug(`Error in the voicemail flow: ${req.body.callId}`);
     next(e);
   }
 };
+
+module.exports.getCallAndMediaFromRecording = async (req, res, next) => {
+  if (req.body.eventType !== 'recording' && req.body.status !== 'complete') {
+    next();
+    return;
+  }
+  try {
+    debug(req.body);
+    const callId = req.body.callId;
+    res.locals.call = await bwAPI.Call.get(callId);
+    res.locals.bandwidthNumber = res.locals.call.to;
+    const recording = await bwAPI.Recording.get(req.body.recordingId);
+    res.locals.mediaUrl = recording.media;
+    next();
+    return;
+  }
+  catch (e) {
+    debug(`Error getting call info from recording: ${req.body.callId}`)
+    next(e);
+  }
+};
+
+module.exports.sendMMSWithRecordingToNumber = async(req, res, next) => {
+  if (req.body.eventType !== 'recording' && req.body.status !== 'complete') {
+    return;
+  }
+  try {
+    const messageData = {
+      to: res.locals.forwardToNumber,
+      from: res.locals.bandwidthNumber,
+      media: [res.locals.mediaUrl],
+      text: `New voicemail from: ${res.locals.call.from}`
+    }
+    const message = await bwAPI.Message.send(messageData);
+    debug(`Sent message: ${message.id}`);
+  }
+  catch (e) {
+    debug(`Error texting media from callid: ${req.body.callId}`);
+    next(e);
+  }
+}
 
 module.exports.hangupFlow = async (req, res, next) => {
   if (req.body.eventType !== 'hangup') {
@@ -325,7 +370,7 @@ module.exports.searchAndOrderNumber = async (req, res, next) => {
     debug(`Error searching for phone number`);
     next(e);
   };
-}
+};
 
 module.exports.updateNumberToApplication = async (req, res, next) => {
   try {
@@ -340,7 +385,7 @@ module.exports.updateNumberToApplication = async (req, res, next) => {
     debug(`Error assigning application to numberId: ${res.locals.numberId}`);
     next(e);
   }
-}
+};
 
 
 /**
