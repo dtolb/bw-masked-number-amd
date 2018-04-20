@@ -80,7 +80,12 @@ const fetchScreenedNumberFromDB = async (iNumber, BindingId, table) => {
 }
 
 module.exports.addNumberToScreen = async (req, res, next) => {
-  if (req.body.reason !== 'max-digits' && req.body.digits !== '3') {
+  if (req.body.eventType !== 'gather' || req.body.reason !== 'max-digits') {
+    next();
+    return;
+  }
+  if (req.body.digits != '3') {
+    debug(`Not adding to screen user pressed: ${req.body.digits}`);
     next();
     return;
   }

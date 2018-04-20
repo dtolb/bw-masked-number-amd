@@ -301,7 +301,6 @@ module.exports.voicemailFlow = async (req, res, next) => {
     else if (event.eventType === 'hangup') {
       // The call hungup
       const recordings = await bwAPI.Call.getRecordings(event.callId);
-      debug(recordings);
     }
   }
   catch (e) {
