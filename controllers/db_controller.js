@@ -11,7 +11,7 @@ const arraysEqual = (arr1, arr2) => {
 module.exports.addBindingToContext = (req, res, next) => {
   res.locals.Binding = req.app.get('models').Binding;
   next();
-}
+};
 
 module.exports.saveBinding = (req, res, next) => {
   try {
@@ -36,13 +36,13 @@ module.exports.saveBinding = (req, res, next) => {
   }
 };
 
-const fetchFromDB = async (bandwidthNumber, table) => {
+const fetchBindingFromDB = async (bandwidthNumber, table) => {
   try {
     const binding = await table.find({
       where: {bandwidthNumber}
     });
     if (binding) {
-      return binding.forwardToNumber;
+      return binding;
     }
     else {
       debug(`Unknown call to ${bandwidthNumber}`);
@@ -51,10 +51,64 @@ const fetchFromDB = async (bandwidthNumber, table) => {
     }
   }
   catch (e) {
-    debug(`Error finding phone number: ${phoneNumber} in db`);
+    debug(`Error finding phone number: ${bandwidthNumber} in db`);
+    throw(e);
+  }
+};
+
+const fetchScreenedNumberFromDB = async (iNumber, BindingId, table) => {
+  try {
+    const sNumber = await table.find({
+      where: {
+        numberToScreen: iNumber,
+        enabled: true,
+        BindingId: BindingId
+      }
+    });
+    if (sNumber) {
+      return sNumber;
+    }
+    else {
+      debug(`Number ${iNumber} not found in numberToScreen`);
+      return false;
+    }
+  }
+  catch (e) {
+    debug(`Error finding phone number: ${bandwidthNumber} in db`);
     throw(e);
   }
 }
+
+module.exports.addNumberToScreen = async (req, res, next) => {
+  if (req.body.reason !== 'max-digits' && req.body.digits !== '3') {
+    next();
+    return;
+  }
+  try {
+    const numberToScreen = res.locals.iCall.from;
+    const bandwidthNumber = res.locals.iCall.to;
+    const ScreenedNumber = req.app.get('models').ScreenedNumber;
+    const table = req.app.get('models').Binding;
+    const binding = await fetchBindingFromDB(bandwidthNumber, table);
+    const newScreen = await ScreenedNumber.findOrCreate({
+      where: {
+        numberToScreen: numberToScreen,
+        BindingId: binding.id,
+      }
+    });
+    if (newScreen[1] === false) {
+      debug(`Screen already exists for: ${numberToScreen}`);
+      await ScreenedNumber.update(
+        {enabled: true}, { where : {id: newScreen[0].id}});
+    }
+    next();
+    return;
+  }
+  catch (e) {
+    debug(`Error saving number ${res.locals.iCall.from} to screen list`);
+    next(e);
+  }
+};
 
 module.exports.findNumbersFromRecording = async (req, res, next) => {
   if (req.body.eventType !== 'recording' && req.body.status !== 'complete') {
@@ -64,7 +118,8 @@ module.exports.findNumbersFromRecording = async (req, res, next) => {
   try {
     const bandwidthNumber = res.locals.bandwidthNumber;
     const table = req.app.get('models').Binding;
-    res.locals.forwardToNumber = await fetchFromDB(bandwidthNumber, table);
+    const binding = await fetchBindingFromDB(bandwidthNumber, table);
+    res.locals.forwardToNumber = binding.forwardToNumber;
     next();
   }
   catch (e) {
@@ -82,7 +137,9 @@ module.exports.findNumbersFromAnswer = async (req, res, next) => {
     debug('Finding number bindings');
     const bandwidthNumber = req.body.to;
     const table = req.app.get('models').Binding;
-    res.locals.forwardToNumber = await fetchFromDB(bandwidthNumber, table);
+    const binding = await fetchBindingFromDB(bandwidthNumber, table);
+    res.locals.forwardToNumber = binding.forwardToNumber;
+    res.locals.bindingId = binding.id;
     next();
   }
   catch (e) {
@@ -90,6 +147,28 @@ module.exports.findNumbersFromAnswer = async (req, res, next) => {
     next(e);
   }
 };
+
+module.exports.searchScreenedNumbers = async (req, res, next) => {
+  if (req.body.eventType !== 'answer') {
+    next();
+    return;
+  }
+  try {
+    const iNumber = req.body.from;
+    const bindingId = res.locals.bindingId;
+    const table = req.app.get('models').ScreenedNumber;
+    debug(`Search screened db for ${iNumber}`);
+    const sNumber = await fetchScreenedNumberFromDB(iNumber, bindingId, table);
+    if (sNumber) {
+      res.locals.screenCall = true;
+    }
+    next();
+  }
+  catch (e) {
+    debug('Error searching ScreenedNumber database');
+    next(e);
+  }
+}
 
 module.exports.listBindings = (req, res, next) => {
   debug('Returning Bindings');

@@ -16,6 +16,8 @@ router.use('/', bw.callBackResponder, db.addBindingToContext);
 
 router.route('/incoming-call')
 .post(db.findNumbersFromAnswer,
+      db.searchScreenedNumbers,
+      bw.sendToVoicemail,
       bw.playRinging,
       bw.createBridge,
       bw.createOutboundCall,
@@ -28,6 +30,7 @@ router.route('/outbound-call-event')
 
 router.route('/gather-flow')
 .post(bw.handleGather,
+      db.addNumberToScreen,
       bw.connectCalls,
       bw.updateCallbackUrls);
 
